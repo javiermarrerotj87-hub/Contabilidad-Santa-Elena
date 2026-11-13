@@ -1,0 +1,335 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contabilidad Congregación Santa Elena</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #printableArea, #printableArea * { visibility: visible; }
+            #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="bg-indigo-900 text-white shadow-md py-4 px-6 mb-6">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-calculator"></i> Congregación Santa Elena
+            </h1>
+            <span class="text-xs bg-indigo-700 px-3 py-1 rounded-full">Sincronizado con Google Sheets</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-5xl mx-auto px-4 space-y-8">
+       
+        <!-- Formulario de Registro -->
+        <section class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-lg font-semibold mb-4 text-indigo-900 border-b pb-2"><i class="fa-solid fa-file-pen"></i> Nuevo Registro Contable</h2>
+           
+            <form id="accountingForm" onsubmit="addRecord(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
+                    <input type="date" id="recDate" required class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Tipo de Movimiento</label>
+                    <select id="recType" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500">
+                        <option value="Ingreso">Ingreso</option>
+                        <option value="Egreso">Egreso</option>
+                        <option value="Saldo Inicial">Saldo Inicial</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Categoría / Fondo</label>
+                    <select id="recCategory" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500">
+                        <optgroup label="Fondos Regulares">
+                            <option value="OM_CAJA">Obra Mundial (caja)</option>
+                            <option value="OM_TRANS">Obra Mundial (electrónico)</option>
+                            <option value="DON_CAJA">Donaciones Congregación (caja)</option>
+                            <option value="DON_TRANS">Donaciones Congregación (electrónico)</option>
+                            <option value="SUC_CAJA">Fondo Sucursal (caja)</option>
+                            <option value="SUC_TRANS">Fondo Sucursal (electrónico)</option>
+                        </optgroup>
+                        <optgroup label="Saldos Iniciales">
+                            <option value="SALDO_SUCURSAL">Fondo Sucursal (Saldo Inicial)</option>
+                            <option value="SALDO_PRINCIPAL">Cuenta Principal (Saldo Inicial)</option>
+                            <option value="SALDO_RECIBIDO">Recibido (Saldo Inicial)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Monto ($)</label>
+                    <input type="number" step="0.01" id="recAmount" placeholder="0.00" required class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Descripción / Detalle</label>
+                    <input type="text" id="recDesc" placeholder="Ej. Contribuciones, gastos de salón, apertura..." required class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="md:col-span-2 mt-2">
+                    <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg shadow transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Guardar en la Nube
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Generador de Informes Mensuales S-26 y S-30 -->
+        <section class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-lg font-semibold mb-4 text-indigo-900 border-b pb-2"><i class="fa-solid fa-file-pdf"></i> Cierre de Mes y Generación de Informes (S-26 y S-30)</h2>
+           
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Seleccionar Mes</label>
+                    <select id="reportMonth" class="w-full border border-slate-300 rounded-lg p-2.5">
+                        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                        <option value="4">Abril</option><option value="5">Mayo</option><option value="6" selected>Junio</option>
+                        <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Año</label>
+                    <input type="number" id="reportYear" value="2026" class="w-full border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <button onclick="generarReporteMensual()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg shadow transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-calculator"></i> Calcular Cierre
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de Resultados y Vista Previa con Nombres Dinámicos -->
+            <div id="reportResultContainer" class="hidden border border-slate-200 rounded-xl p-6 bg-slate-50 space-y-6">
+                <div class="flex justify-between items-center flex-wrap gap-4 border-b pb-4">
+                    <h3 id="reportTitle" class="font-bold text-indigo-900 text-lg">Resumen del Periodo</h3>
+                    <div class="flex gap-2">
+                        <button onclick="exportarPDF('S-30')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf"></i> Descargar S-30 (PDF)
+                        </button>
+                        <button onclick="exportarPDF('S-26')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines"></i> Descargar S-26 (Hoja)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contenido Imprimible -->
+                <div id="printableArea" class="bg-white p-6 rounded-lg shadow-sm space-y-4 text-sm">
+                    <div class="text-center border-b pb-4">
+                        <h2 class="font-bold text-base">CONGREGACIÓN SANTA ELENA</h2>
+                        <h3 id="printSubtitle" class="text-indigo-900 font-semibold">INFORME MENSUAL S-30 Y HOJA DE CUENTAS S-26</h3>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><strong>Fondos al inicio del mes [a]:</strong> $<span id="lblA">0.00</span></div>
+                        <div><strong>Total Ingresos [d]:</strong> $<span id="lblD">0.00</span></div>
+                        <div><strong>Total Recibido Congregación [b]:</strong> $<span id="lblB">0.00</span></div>
+                        <div><strong>Total Desembolsos [g]:</strong> $<span id="lblG">0.00</span></div>
+                        <div><strong>Otros Ingresos (Obra Mundial) [c]:</strong> $<span id="lblC">0.00</span></div>
+                        <div><strong>Superávit / Déficit [h]:</strong> $<span id="lblH">0.00</span></div>
+                    </div>
+
+                    <div class="bg-indigo-50 p-3 rounded-lg flex justify-between font-bold text-indigo-900">
+                        <span>Fondos al final del mes [i] (Pasan al mes siguiente):</span>
+                        <span>$<span id="lblI">0.00</span></span>
+                    </div>
+
+                    <h4 class="font-bold text-slate-700 pt-4 border-t">Detalle de Registros del Mes (S-26)</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-100 border-b">
+                                    <th class="p-2">Fecha</th>
+                                    <th class="p-2">Tipo</th>
+                                    <th class="p-2">Categoría</th>
+                                    <th class="p-2">Descripción</th>
+                                    <th class="p-2 text-right">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="s26TableBody">
+                                <!-- Se llena dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historial General de Registros -->
+        <section class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-lg font-semibold mb-4 text-indigo-900 border-b pb-2">Historial de Registros en la Nube</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 text-sm border-b">
+                            <th class="p-3">Fecha</th>
+                            <th class="p-3">Tipo</th>
+                            <th class="p-3">Categoría</th>
+                            <th class="p-3">Descripción</th>
+                            <th class="p-3 text-right">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody" class="text-sm divide-y divide-slate-100">
+                        <tr><td colspan="5" class="text-center p-4 text-slate-400">Cargando registros...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // ⚠️ REEMPLAZA ESTA URL CON EL ENLACE QUE COPIASTE DE GOOGLE APPS SCRIPT
+        const API_URL = "https://script.google.com/macros/s/AKfycbyBChBU9QKPBvd3H58tOe8vbJi_ve0-4zUBcDIO1p0EsWqCs6a5cOtBiLYUWeTSDXut/exec";
+
+        const CATEGORY_NAMES = {
+            'OM_CAJA': 'Obra Mundial (caja)',
+            'OM_TRANS': 'Obra Mundial (electrónico)',
+            'DON_CAJA': 'Donaciones Congregación (caja)',
+            'DON_TRANS': 'Donaciones Congregación (electrónico)',
+            'SUC_CAJA': 'Fondo Sucursal (caja)',
+            'SUC_TRANS': 'Fondo Sucursal (electrónico)',
+            'SALDO_SUCURSAL': 'Fondo Sucursal (Saldo Inicial)',
+            'SALDO_PRINCIPAL': 'Cuenta Principal (Saldo Inicial)',
+            'SALDO_RECIBIDO': 'Recibido (Saldo Inicial)'
+        };
+
+        let cloudRecords = [];
+        let reporteActual = null;
+
+        document.getElementById('recDate').valueAsDate = new Date();
+
+        async function loadCloudData() {
+            if (API_URL.includes("PEGAR_AQUI")) return;
+            try {
+                const response = await fetch(API_URL);
+                cloudRecords = await response.json();
+                renderTable();
+            } catch (error) {
+                console.error("Error cargando datos:", error);
+            }
+        }
+
+        async function addRecord(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando...`;
+            btn.disabled = true;
+
+            const newRecord = {
+                fecha: document.getElementById('recDate').value,
+                tipo: document.getElementById('recType').value,
+                categoria: document.getElementById('recCategory').value,
+                descripcion: document.getElementById('recDesc').value,
+                monto: parseFloat(document.getElementById('recAmount').value),
+                usuario: "Administrador"
+            };
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newRecord)
+                });
+
+                alert("¡Registro guardado exitosamente!");
+                document.getElementById('accountingForm').reset();
+                document.getElementById('recDate').valueAsDate = new Date();
+                loadCloudData();
+            } catch (error) {
+                alert("Error al guardar.");
+            } finally {
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en la Nube`;
+                btn.disabled = false;
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('recordsTableBody');
+            tbody.innerHTML = "";
+            if (!cloudRecords || cloudRecords.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-slate-400">Sin registros.</td></tr>`;
+                return;
+            }
+            [...cloudRecords].reverse().forEach(rec => {
+                const tr = document.createElement('tr');
+                const catName = CATEGORY_NAMES[rec.Categoria] || rec.Categoria;
+                tr.innerHTML = `
+                    <td class="p-3">${rec.Fecha || ''}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-xs ${rec.Tipo === 'Ingreso' ? 'bg-emerald-100 text-emerald-800' : rec.Tipo === 'Saldo Inicial' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'}">${rec.Tipo || ''}</span></td>
+                    <td class="p-3 font-medium">${catName}</td>
+                    <td class="p-3">${rec.Descripcion || ''}</td>
+                    <td class="p-3 text-right font-semibold">$${parseFloat(rec.Monto || 0).toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function generarReporteMensual() {
+            const mes = document.getElementById('reportMonth').value;
+            const anio = document.getElementById('reportYear').value;
+            const mesTexto = document.getElementById('reportMonth').selectedOptions[0].text;
+
+            try {
+                const res = await fetch(`${API_URL}?accion=resumenMensual&mes=${mes}&anio=${anio}`);
+                reporteActual = await res.json();
+
+                document.getElementById('reportTitle').innerText = `Reporte Contable - ${mesTexto} ${anio}`;
+                document.getElementById('printSubtitle').innerText = `INFORME MENSUAL S-30 Y S-26 (${mesTexto.toUpperCase()} ${anio})`;
+               
+                document.getElementById('lblA').innerText = reporteActual.saldoInicial.toFixed(2);
+                document.getElementById('lblB').innerText = reporteActual.totalRecibido.toFixed(2);
+                document.getElementById('lblC').innerText = reporteActual.obraMundialCaja.toFixed(2);
+                document.getElementById('lblD').innerText = reporteActual.totalIngresos.toFixed(2);
+                document.getElementById('lblG').innerText = reporteActual.totalDesembolsos.toFixed(2);
+                document.getElementById('lblH').innerText = reporteActual.superavitDeficit.toFixed(2);
+                document.getElementById('lblI').innerText = reporteActual.saldoFinal.toFixed(2);
+
+                const s26Body = document.getElementById('s26TableBody');
+                s26Body.innerHTML = "";
+                if (reporteActual.registros.length === 0) {
+                    s26Body.innerHTML = `<tr><td colspan="5" class="text-center p-3 text-slate-400">No hay movimientos en este mes.</td></tr>`;
+                } else {
+                    reporteActual.registros.forEach(r => {
+                        s26Body.innerHTML += `
+                            <tr class="border-b">
+                                <td class="p-2">${r.fecha}</td>
+                                <td class="p-2">${r.tipo}</td>
+                                <td class="p-2">${CATEGORY_NAMES[r.categoria] || r.categoria}</td>
+                                <td class="p-2">${r.descripcion}</td>
+                                <td class="p-2 text-right font-semibold">$${parseFloat(r.monto).toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                document.getElementById('reportResultContainer').classList.remove('hidden');
+            } catch (error) {
+                alert("Error generando el reporte mensual.");
+                console.error(error);
+            }
+        }
+
+        function exportarPDF(tipoDoc) {
+            const mesTexto = document.getElementById('reportMonth').selectedOptions[0].text;
+            // Configura dinámicamente el nombre del archivo para que al guardar sea S-30-Junio o S-26-Junio
+            document.title = `${tipoDoc}-${mesTexto}`;
+            window.print();
+        }
+
+        loadCloudData();
+    </script>
+</body>
+</html>
